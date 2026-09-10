@@ -1,5 +1,6 @@
 import json
 import datetime
+import textwrap
 class Rooms:
     def __init__(self, room_id, room_no, room_type, price, status):
         self.room_id = room_id
@@ -7,6 +8,14 @@ class Rooms:
         self.room_type = room_type
         self.price = price
         self.status = status
+    def __str__(self):
+        output = f'''
+        Room No : {self.room_no}
+        Room Type : {self.room_type}
+        Room Price : {self.price}
+        Room Status : {self.status}
+        '''
+        return textwrap.dedent(output).strip()
 class Customers:
     def __init__(self, customer_id, name, age, phone_no):
         self.customer_id = customer_id
@@ -33,6 +42,16 @@ class HotelManagement:
         else:
             all_id = [int(id[1:]) for id in self.rooms]
             return "R" + str(max(all_id) + 1)
+    def CheckRooms(self):
+        if not self.rooms:
+            print("No Rooms Data Available")
+        else:
+            return True
+    def CheckInput(self,input):
+        if not input.isdigit():
+            print("Only Numbers Allowed")
+        else:
+            return True
     def InputRoomNo(self):
         while True:
             room_no = input("Enter Room No : ")
@@ -43,7 +62,7 @@ class HotelManagement:
                 if not self.rooms:
                     break
                 else:
-                    for obj in self.rooms.values():
+                    for obj in self.rooms:
                         if obj.room_no == room_no:
                             print("Dublicate Room No")
                             break
@@ -84,3 +103,49 @@ class HotelManagement:
         room_status = self.InputRoomStatus()
         room = Rooms(room_id,room_no,room_type,price,room_status)
         self.rooms.append(room)
+    def ViewRooms(self):
+        if self.CheckRooms():
+            for obj in self.rooms:
+                print(obj)
+    def SearchRooms(self):
+        if self.CheckRooms():
+            while True:
+                choice = input("Search By, \n1.Room No \n2.Type \n3.Status \n---> ")
+                if self.CheckInput(choice):
+                    match choice:
+                        case "1":
+                            while True:
+                                room_no = input("Enter Room No : ")
+                                if self.CheckInput(room_no):
+                                    for obj in self.rooms:
+                                        if obj.room_no == room_no:
+                                            print(obj)
+                                            break
+                                    else:
+                                        print("Room Not Found")
+                                    break
+                                else:
+                                    print("Invalid Room No")
+                        case "2":
+                            type = self.InputRoomType()
+                            for obj in self.rooms():
+                                if obj.room_type == type:
+                                    print(obj)
+                        case "3":
+                            while True:
+                                status = input("Enter Room Status : ").upper()
+                                if status == "AVAILABLE" or status == "OCCUPIED":
+                                    for obj in self.rooms:
+                                        if obj.status == status:
+                                            print(obj)
+                                    break                                    
+                                else:
+                                    print("Invalid Status")
+                        case _:
+                            print("Invalid Choice")
+                    break
+                
+                    
+
+
+
