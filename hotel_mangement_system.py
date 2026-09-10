@@ -1,3 +1,5 @@
+import json
+import datetime
 class Rooms:
     def __init__(self, room_id, room_no, room_type, price, status):
         self.room_id = room_id
@@ -24,3 +26,61 @@ class HotelManagement:
         self.rooms = []
         self.customers = []
         self.bookings = []
+        # load
+    def GenerateRoomID(self): 
+        if not self.rooms:
+            return "R101"
+        else:
+            all_id = [int(id[1:]) for id in self.rooms]
+            return "R" + str(max(all_id) + 1)
+    def InputRoomNo(self):
+        while True:
+            room_no = input("Enter Room No : ")
+            if len(room_no) > 5 and not room_no.isdigit():
+                # Assuming room no can't be 5 digits
+                print("Invalid Room No")
+            else:
+                if not self.rooms:
+                    break
+                else:
+                    for obj in self.rooms.values():
+                        if obj.room_no == room_no:
+                            print("Dublicate Room No")
+                            break
+                    else:
+                        break
+        return room_no
+    def InputRoomType(self):
+        while True:
+            room_type = input("Enter Room Type (Single/Double/Deluxe/Suite) : ").upper()
+            room_types = ["SINGLE","DOUBLE","DELUXE","SUITE"]
+            if not room_type in room_types:
+                print("Invalid Room Type")
+            else:
+                break
+        return room_type
+    def RoomPrice(self,room_type):
+        prices = {
+            "SINGLE":1500,
+            "DOUBLE":2500,
+            "DELUXE":3500,
+            "SUITE":5000
+            }
+        price = prices[room_type]
+        return price
+    def InputRoomStatus(self):
+        while True:
+            status = input("Enter Room Status : ").upper()
+            if status == "AVAILABLE" or status == "OCCUPIED":
+                break
+            else:
+                print("Invalid Status")
+        return status
+    def AddRoom(self):
+        room_id = self.GenerateRoomID()
+        room_no = self.InputRoomNo() 
+        room_type = self.InputRoomType()
+        price = self.RoomPrice(room_type)
+        room_status = self.InputRoomStatus()
+        room = Rooms(room_id,room_no,room_type,price,room_status)
+        self.rooms.append(room)
