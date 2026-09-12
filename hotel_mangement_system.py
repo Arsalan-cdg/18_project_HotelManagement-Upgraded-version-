@@ -40,7 +40,7 @@ class HotelManagement:
         if not self.rooms:
             return "R101"
         else:
-            all_id = [int(id[1:]) for id in self.rooms]
+            all_id = [int(obj.room_id[1:]) for obj in self.rooms]
             return "R" + str(max(all_id) + 1)
     def CheckRooms(self):
         if not self.rooms:
@@ -103,6 +103,7 @@ class HotelManagement:
         room_status = self.InputRoomStatus()
         room = Rooms(room_id,room_no,room_type,price,room_status)
         self.rooms.append(room)
+        #save
     def ViewRooms(self):
         if self.CheckRooms():
             for obj in self.rooms:
@@ -144,6 +145,47 @@ class HotelManagement:
                         case _:
                             print("Invalid Choice")
                     break
+    def GenerateCustomerID(self):
+        if not self.customers:
+            return "C10001"
+        else:
+            all_id = [int(obj.customer_id[2:]) for obj in self.customers]
+            return "C" + str(max(all_id) + 1)
+    def InputName(self):
+        while True:
+            name = input("Enter Your Name : ").upper()
+            if name.isalpha():
+                break
+            else:
+                print("Only Alphabets Allowed")
+        return name
+    def InputAge(self):
+        while True:
+            age = input("Enter Your Age : ")
+            if self.CheckInput(age):
+                age = int(age)
+                if 0 <= age <= 100:
+                    break
+                else:
+                    print("Invalid Age")
+        return str(age)
+    def InputPhoneNo(self):
+        while True:
+            phone = input("Enter your Phone No : ")
+            if self.CheckInput(phone):
+                if len(phone) == 10 and phone[0] != "0":
+                    break
+                else:
+                    print("Invalid Phone No")
+        return phone
+    def AddCustomer(self):
+        customer_id = self.GenerateCustomerID()
+        name = self.InputName()
+        age = self.InputAge()
+        phone_no = self.InputPhoneNo()
+        customer = Customers(customer_id,name,age,phone_no)
+        self.customers.append(customer)
+        #save
                 
                     
 
