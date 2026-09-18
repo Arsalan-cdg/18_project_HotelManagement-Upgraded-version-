@@ -1,7 +1,7 @@
 import json
 from datetime import date,timedelta
 import textwrap
-class Rooms:
+class Room:
     def __init__(self, room_id, room_no, room_type, price, status):
         self.room_id = room_id
         self.room_no = room_no
@@ -16,7 +16,7 @@ class Rooms:
         Room Status : {self.status}
         '''
         return textwrap.dedent(output).strip()
-class Customers:
+class Customer:
     def __init__(self, customer_id, name, age, phone_no):
         self.customer_id = customer_id
         self.name = name
@@ -30,7 +30,7 @@ class Customers:
         Phone No : {"X"*6+self.phone_no[6:]}
         '''
         return textwrap.dedent(output).strip()
-class Bookings:
+class Booking:
     def __init__(self, booking_id, customer_id, room_id, check_in_date, check_out_date, booking_status):
         self.booking_id = booking_id
         self.customer_id = customer_id
@@ -64,7 +64,7 @@ class HotelManagement:
             return "R" + str(max(all_id) + 1)
     def CheckRooms(self):
         if not self.rooms:
-            print("No Rooms Data Available")
+            print("No Room Data Available")
         else:
             return True
     def CheckInput(self,input):
@@ -75,7 +75,7 @@ class HotelManagement:
     def InputRoomNo(self):
         while True:
             room_no = input("Enter Room No : ")
-            if len(room_no) > 5 and not room_no.isdigit():
+            if len(room_no) > 5 or not room_no.isdigit():
                 # Assuming room no can't be 5 digits
                 print("Invalid Room No")
             else:
@@ -113,7 +113,7 @@ class HotelManagement:
         room_type = self.InputRoomType()
         price = self.RoomPrice(room_type)
         room_status = "AVAILABLE"
-        room = Rooms(room_id,room_no,room_type,price,room_status)
+        room = Room(room_id,room_no,room_type,price,room_status)
         self.rooms.append(room)
         self.SaveRoomsData()
     def ViewRooms(self):
@@ -141,16 +141,22 @@ class HotelManagement:
                                     print("Invalid Room No")
                         case "2":
                             type = self.InputRoomType()
-                            for obj in self.rooms():
-                                if obj.room_type == type:
-                                    print(obj)
+                            rooms = [obj for obj in self.rooms if obj.room_type == type]
+                            if not room:
+                                print("No Room Found Of such Type")
+                            else:
+                                for room in rooms:
+                                    print(room)
                         case "3":
                             while True:
                                 status = input("Enter Room Status : ").upper()
                                 if status == "AVAILABLE" or status == "OCCUPIED":
-                                    for obj in self.rooms:
-                                        if obj.status == status:
-                                            print(obj)
+                                    rooms = [obj for obj in self.rooms if obj.status == status]
+                                    if not room:
+                                        print("No Room Found Of such Status")
+                                    else:
+                                        for room in rooms:
+                                            print(room)
                                     break                                    
                                 else:
                                     print("Invalid Status")
@@ -166,7 +172,8 @@ class HotelManagement:
     def InputName(self):
         while True:
             name = input("Enter Your Name : ").upper()
-            if name.isalpha():
+            name_copy = name.replace(" ","")
+            if name_copy.isalpha():
                 break
             else:
                 print("Only Alphabets Allowed")
@@ -183,19 +190,26 @@ class HotelManagement:
         return str(age)
     def InputPhoneNo(self):
         while True:
-            phone = input("Enter your Phone No : ")
-            if self.CheckInput(phone):
-                if len(phone) == 10 and phone[0] != "0":
-                    break
+            phone_no = input("Enter your Phone No : ")
+            if self.CheckInput(phone_no):
+                if len(phone_no) == 10 and phone_no[0] != "0":
+                    if not self.customers:
+                        break
+                    else:
+                        all_phone_no = [obj.phone_no for obj in self.customers]
+                        if phone_no in all_phone_no:
+                            print("Dublicate Phone No Not Allowed")
+                        else:
+                            break
                 else:
                     print("Invalid Phone No")
-        return phone
+        return phone_no
     def AddCustomer(self):
         customer_id = self.GenerateCustomerID()
         name = self.InputName()
         age = self.InputAge()
         phone_no = self.InputPhoneNo()
-        customer = Customers(customer_id,name,age,phone_no)
+        customer = Customer(customer_id,name,age,phone_no)
         self.customers.append(customer)
         self.SaveCustomersData()
     def GenerateBookingID(self):
@@ -210,13 +224,15 @@ class HotelManagement:
         else:
             return True
     def CheckCustomerID(self):
-        name = self.InputName()
-        phone_no = self.InputPhoneNo()
-        id = [obj.customer_id for obj in self.customers if obj.name == name and obj.phone_no == phone_no]
-        if not id:
-            print("Please Add Customer first")
+        customer_id = input("Enter Your Customer ID : ")
+        if customer_id.isalnum():
+            customer_obj = [obj for obj in self.customers if obj.customer_id == customer_id]
+            if not customer_obj:
+                print("Please Add Customer First")
+            else:
+                return customer_id
         else:
-            return id[0]
+            print("Invalid Customer ID")
     def CheckRoomID(self):
         while True:
             room_no = input("Enter Room No Which You want to Book : ")
@@ -230,13 +246,10 @@ class HotelManagement:
                         if obj.status == "OCCUPIED":
                             print("Room Is Currrently Occupied")
                         else:
-                            obj.status = "OCCUPIED"
-                            self.SaveRoomsData()
                             break
                 else:
                     print("Invalid Room No")
         return obj.room_id
-
     def BookingDate(self):
         while True:
             check_in_date = input("Enter Date in Which You Want to Book Room (YYYY-MM-DD): ")
@@ -257,8 +270,10 @@ class HotelManagement:
         while True:
             stay = input("How Many Days You Will Stay Here ? ")
             if self.CheckInput(stay):
-                if len(stay) > 100:
+                if int(stay) > 100:
                     print("You Can't Stay Such Days")
+                elif int(stay) == 0:
+                    print("Invalid stay")
                 else: 
                     stay = int(stay)
                     new_date = date + timedelta(days=stay)
@@ -267,38 +282,40 @@ class HotelManagement:
     def Booking(self):
         if self.CheckCustomers() and self.CheckRooms():
             booking_id = self.GenerateBookingID()
-            Customers_id = self.CheckCustomerID()
+            Customer_id = self.CheckCustomerID()
             room_id = self.CheckRoomID()
             check_in_date = self.BookingDate()
             check_out_date = self.CalculateDate(check_in_date)
             booking_status = "BOOKED"
-            booking = Bookings(booking_id,customer_id,room_id,check_in_date,check_out_date,booking_status)
+            booking = Booking(booking_id,customer_id,room_id,check_in_date,check_out_date,booking_status)
             self.bookings.append(booking)
             self.SaveBookingsData()
     def CheckInAndOut(self):
         booking_id = input("Enter Booking ID : ")
         if booking_id.isalnum():
-            obj = [obj for obj in self.bookings if obj.booking_id == booking_id]
-            if not obj:
+            booking_obj = [obj for obj in self.bookings if obj.booking_id == booking_id]
+            room_id = booking_obj.room_id
+            room_obj = [obj for obj in self.rooms if obj.room_id == room_id]
+            if not booking_obj:
                 print("Invalid Booking ID")
             else:
-                obj = obj[0]
-                if date.today() == obj.check_in_date:
-                    obj.booking_status = "CHECK IN"
+                booking_obj = booking_obj[0]
+                if date.today() == booking_obj.check_in_date and booking_obj.booking_status == "BOOKED":
+                    booking_obj.booking_status = "CHECKED IN"
+                    room_obj.status = "OCCUPIED"
                     print("You Check In")
                     self.SaveBookingsData()
-                elif date.today() == obj.check_out_date:
-                    obj.booking_status = "COMPLETED"
+                elif date.today() == booking_obj.check_out_date and booking_obj.booking_status == "CHECKED IN":
+                    booking_obj.booking_status = "COMPLETED"
                     print("You Check Out")
-                    print(self.GenerateBill(obj))
-                    room_id = obj.room_id
+                    print(self.GenerateBill(booking_obj))
                     for obj in self.rooms:
                         if obj.room_id == room_id:
                             obj.status = "AVAILABLE"
-                    self.SaveBookingsData()
-                    self.SaveRoomsData()
                 else:
                     print("Please Check Your Check IN and Out Dates")
+                self.SaveBookingsData()
+                self.SaveRoomsData()
         else:
             print("Invalid Booking ID")
     def ViewCustomerInfo(self):
@@ -318,14 +335,15 @@ class HotelManagement:
                             print(customer_obj)
                             print("You Have Not Book Any Room Yet!")
                         else:
-                            print(booking_obj[0])
+                            for obj in booking_obj:
+                                print(obj)
                     else:
                         print("You Have Not Book Any Room Yet!")
             else:
                 print("Please Add Customer First")
     def CancelBooking(self):
         if not self.bookings:
-            print("There Are No Bookings")
+            print("There Are No Booking")
         else:
             booking_id = input("Enter Your Booking ID : ")
             if booking_id.isalnum():
@@ -338,13 +356,8 @@ class HotelManagement:
                         choice = input("Do You Want to Cancel Your Booking(Y/N) : ").upper()
                         if choice == "Y":
                             booking_obj.booking_status = "CANCELLED"
-                            room_id = booking_obj.room_id
-                            room_obj = [obj for obj in self.rooms if obj.room_id == room_id]
-                            room_obj = room_obj[0]
-                            room_obj.status = "AVAILABLE"
                             print("Your Booking is Successfully Cancelled")
                             self.SaveBookingsData()
-                            self.SaveRoomsData()
                         elif choice == "N":
                             print("OK,Your Booking is Still Active")
                         else:
@@ -390,51 +403,51 @@ class HotelManagement:
         customers_data = {}
         for obj in self.customers:
             customers_data[obj.customer_id] = {"Name":obj.name,"Age":obj.age,"Phone No":obj.phone_no}
-        with open("customers_data","w") as f:
+        with open("customers_data.json","w") as f:
             json.dump(customers_data,f,indent=4)
     def SaveBookingsData(self):
         bookings_data = {}
         for obj in self.bookings:
-            bookings_data[obj.booking_id] = {"Customer ID":obj.customer_id,"Room ID":obj.room_id,"Check In Date":obj.check_in_date,"Check Out Date":obj.check_out_date,"Booking Status":obj.booking_status}
-        with open("bookings_data","w") as f:
+            bookings_data[obj.booking_id] = {"Customer ID":obj.customer_id,"Room ID":obj.room_id,"Check In Date":str(obj.check_in_date),"Check Out Date":str(obj.check_out_date),"Booking Status":obj.booking_status}
+        with open("bookings_data.json","w") as f:
             json.dump(bookings_data,f,indent=4)
     def LoadRoomsData(self):
         try:
-            with open("rooms_data") as f:
+            with open("rooms_data.json") as f:
                 rooms_data = json.load(f)
             for id,info in rooms_data.items():
-                room = Rooms(id,info["Room No"],info["Room Type"],info["Price"],info["Status"])
+                room = Room(id,info["Room No"],info["Room Type"],info["Price"],info["Status"])
                 self.rooms.append(room)
         except FileNotFoundError,json.JSONDecodeError:
             return
     def LoadCustomersData(self):
         try:
-            with open("customers_data") as f:
+            with open("customers_data.json") as f:
                 customers_data = json.load(f)
             for id,info in customers_data.items():
-                customer = Customers(id,info["Name"],info["Age"],info["Phone No"])
+                customer = Customer(id,info["Name"],info["Age"],info["Phone No"])
                 self.customers.append(customer)
         except FileNotFoundError,json.JSONDecodeError:
             return
     def LoadBookingsData(self):
         try:
-            with open("bookings_data") as f:
+            with open("bookings_data.json") as f:
                 bookings_data = json.load(f)
             for id,info in bookings_data.items():
                 check_in_date = info["Check In Date"]
                 check_in_date = date.strptime(check_in_date,"%Y-%m-%d")
                 check_out_date = info["Check Out Date"]
                 check_out_date = date.strptime(check_out_date,"%Y-%m-%d")
-                booking = Bookings(id,info["Customer ID"],info["Room ID"],check_in_date,check_out_date,info["Booking Status"])
+                booking = Booking(id,info["Customer ID"],info["Room ID"],check_in_date,check_out_date,info["Booking Status"])
                 self.bookings.append(booking)
         except FileNotFoundError,json.JSONDecodeError:
             return
 hotel_management = HotelManagement()
 def menu():
     print('''
-    1.Add Rooms
-    2.View Rooms
-    3.Search Rooms
+    1.Add Room
+    2.View Room
+    3.Search Room
     4.Add Customer
     5.Create Booking
     6.Check IN or OUT
@@ -452,7 +465,7 @@ def InputChoice():
     return choice
 while True:
     menu()
-    InputChoice()
+    choice = InputChoice()
     if choice == 1:
         hotel_management.AddRoom()
     elif choice == 2:
