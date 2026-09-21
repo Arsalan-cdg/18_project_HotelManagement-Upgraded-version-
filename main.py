@@ -284,7 +284,7 @@ class HotelManagement:
                                 customer_obj = [obj for obj in self.customers if obj.customer_id == customer_id]
                                 customer_obj = customer_obj[0]
                                 print(customer_obj)
-                                print(obj.booking_status)
+                                print(f"Booking Status : {obj.booking_status}")
             elif choice == 3:
                 if self.CheckBookings() and self.CheckRooms():
                     room_type = self.InputRoomType()
@@ -299,7 +299,9 @@ class HotelManagement:
                             customer_obj = [obj for obj in self.customers if obj.customer_id == customer_id]
                             customer_obj = customer_obj[0]
                             print(customer_obj)
-                            print(booking_obj.booking_status)
+                            print(f"Booking Status : {booking_obj.booking_status}")
+            else:
+                print("Invalid Choice")
     def GenerateBookingID(self):
         if not self.bookings:
             return "B10001"
@@ -406,6 +408,33 @@ class HotelManagement:
                 self.SaveRoomsData()
         else:
             print("Invalid Booking ID")
+    def ViewBookings(self):
+        if self.CheckRooms() and self.CheckCustomers() and self.CheckBookings():
+            for obj in self.bookings:
+                customer_id = obj.customer_id
+                customer_name = [obj.name for obj in self.customers if obj.customer_id == customer_id][0]
+                print(f"Name : {customer_name}")
+                print(obj)
+    def SearchStatus(status):
+        for obj in self.bookings:
+            if obj.booking_status == status:
+                print(obj)
+    def SearchBookings(self):
+        if self.CheckRooms() and self.CheckCustomers() and self.CheckBookings():
+            print('''
+            Search Bookings By-
+            1.Booking Status
+            ''')
+            choice = self.InputChoice()
+            if choice == 1:
+                status = input("Enter Booking Status : ").upper()
+                bookings_status = ["BOOKED","CHECKED IN","COMPLETED","CANCELLED"]
+                if status in booking_status:
+                    self.SearchStatus(status)
+                else:
+                    print("Invalid Booking Status")
+            else:
+                print("Invalid Choice")
     def ViewCustomerInfo(self):
         if self.CheckRooms():
             if self.customers:
