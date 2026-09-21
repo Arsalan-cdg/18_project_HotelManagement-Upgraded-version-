@@ -572,7 +572,9 @@ def menu():
     8.Cancel Booking
     9.View Customer
     10.Search Customer
-    11.Exit
+    11.View Bookings
+    12.Search Bookings
+    13.Exit
     ''')
 while True:
     menu()
@@ -598,6 +600,10 @@ while True:
     elif choice == 10:
         hotel_management.SearchCustomers()
     elif choice == 11:
+        hotel_management.ViewBookings()
+    elif choice == 12:
+        hotel_management.SearchBookings()
+    elif choice == 13:
         print("Exited")
         break
     else:
