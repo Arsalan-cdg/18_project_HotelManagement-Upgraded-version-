@@ -1,5 +1,5 @@
 import json
-from datetime import date,timedelta
+from datetime import date,timedelta,datetime
 import textwrap
 class Room:
     def __init__(self, room_id, room_no, room_type, price, status):
@@ -142,7 +142,7 @@ class HotelManagement:
                         case "2":
                             type = self.InputRoomType()
                             rooms = [obj for obj in self.rooms if obj.room_type == type]
-                            if not room:
+                            if not rooms:
                                 print("No Room Found Of such Type")
                             else:
                                 for room in rooms:
@@ -152,7 +152,7 @@ class HotelManagement:
                                 status = input("Enter Room Status : ").upper()
                                 if status == "AVAILABLE" or status == "OCCUPIED":
                                     rooms = [obj for obj in self.rooms if obj.status == status]
-                                    if not room:
+                                    if not rooms:
                                         print("No Room Found Of such Status")
                                     else:
                                         for room in rooms:
@@ -257,7 +257,7 @@ class HotelManagement:
             2.Room No
             3.Room Type
             ''')
-            coice = self.InputChoice()
+            choice = self.InputChoice()
             if choice == 1:
                 name = self.InputName()
                 customer_obj = [obj for obj in self.customers if obj.name == name]
@@ -268,7 +268,7 @@ class HotelManagement:
                         print(obj)
             elif choice == 2:
                 if self.CheckRooms() and self.CheckBookings():
-                    room_no = self.inputRoomNo()
+                    room_no = self.InputRoomNo()
                     room_obj = [obj for obj in self.rooms if obj.room_no == room_no]
                     if not room_obj:    
                         print("Room Not Found")
@@ -294,12 +294,12 @@ class HotelManagement:
                         if not booking_obj:
                             print("No Customer Booked This Type Of Room")
                         else:
-                            booking_obj = booking_obj[0]
-                            customer_id = booking_obj.Customer_id
-                            customer_obj = [obj for obj in self.customers if obj.customer_id == customer_id]
-                            customer_obj = customer_obj[0]
-                            print(customer_obj)
-                            print(f"Booking Status : {booking_obj.booking_status}")
+                            for obj in booking_obj:                                
+                                customer_id = obj.customer_id
+                                customer_obj = [obj for obj in self.customers if obj.customer_id == customer_id]
+                                customer_obj = customer_obj[0]
+                                print(customer_obj)
+                                print(f"Booking Status : {booking_obj.booking_status}")
             else:
                 print("Invalid Choice")
     def GenerateBookingID(self):
@@ -346,7 +346,7 @@ class HotelManagement:
             try:
                 current_year = date.today().year
                 if current_year >= int(check_in_date[:4]) <= current_year + 1:
-                    check_in_date = date.strptime(check_in_date,"%Y-%m-%d")
+                    check_in_date = datetime.strptime(check_in_date,"%Y-%m-%d").date()
                     if check_in_date < date.today():
                         print("Invalid Date")
                     else:
@@ -372,7 +372,7 @@ class HotelManagement:
     def Booking(self):
         if self.CheckCustomers() and self.CheckRooms():
             booking_id = self.GenerateBookingID()
-            Customer_id = self.CheckCustomerID()
+            customer_id = self.CheckCustomerID()
             room_id = self.CheckRoomID()
             check_in_date = self.BookingDate()
             check_out_date = self.CalculateDate(check_in_date)
@@ -383,13 +383,13 @@ class HotelManagement:
     def CheckInAndOut(self):
         booking_id = input("Enter Booking ID : ")
         if booking_id.isalnum():
-            booking_obj = [obj for obj in self.bookings if obj.booking_id == booking_id]
-            room_id = booking_obj.room_id
-            room_obj = [obj for obj in self.rooms if obj.room_id == room_id]
+            booking_obj = [obj for obj in self.bookings if obj.booking_id == booking_id]            
             if not booking_obj:
                 print("Invalid Booking ID")
             else:
                 booking_obj = booking_obj[0]
+                room_id = booking_obj.room_id
+                room_obj = [obj for obj in self.rooms if obj.room_id == room_id][0]
                 if date.today() == booking_obj.check_in_date and booking_obj.booking_status == "BOOKED":
                     booking_obj.booking_status = "CHECKED IN"
                     room_obj.status = "OCCUPIED"
@@ -415,7 +415,7 @@ class HotelManagement:
                 customer_name = [obj.name for obj in self.customers if obj.customer_id == customer_id][0]
                 print(f"Name : {customer_name}")
                 print(obj)
-    def SearchStatus(status):
+    def SearchStatus(self,status):
         for obj in self.bookings:
             if obj.booking_status == status:
                 print(obj)
@@ -428,7 +428,7 @@ class HotelManagement:
             choice = self.InputChoice()
             if choice == 1:
                 status = input("Enter Booking Status : ").upper()
-                bookings_status = ["BOOKED","CHECKED IN","COMPLETED","CANCELLED"]
+                booking_status = ["BOOKED","CHECKED IN","COMPLETED","CANCELLED"]
                 if status in booking_status:
                     self.SearchStatus(status)
                 else:
@@ -552,9 +552,9 @@ class HotelManagement:
                 bookings_data = json.load(f)
             for id,info in bookings_data.items():
                 check_in_date = info["Check In Date"]
-                check_in_date = date.strptime(check_in_date,"%Y-%m-%d")
+                check_in_date = datetime.strptime(check_in_date,"%Y-%m-%d").date()
                 check_out_date = info["Check Out Date"]
-                check_out_date = date.strptime(check_out_date,"%Y-%m-%d")
+                check_out_date = datetime.strptime(check_out_date,"%Y-%m-%d").date()
                 booking = Booking(id,info["Customer ID"],info["Room ID"],check_in_date,check_out_date,info["Booking Status"])
                 self.bookings.append(booking)
         except FileNotFoundError,json.JSONDecodeError:
