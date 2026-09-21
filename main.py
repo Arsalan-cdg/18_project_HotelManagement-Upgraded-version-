@@ -212,6 +212,94 @@ class HotelManagement:
         customer = Customer(customer_id,name,age,phone_no)
         self.customers.append(customer)
         self.SaveCustomersData()
+    def CheckCustomers(self):
+        if not self.customers:
+            print("No Customers Data Available")
+        else:
+            return True
+    def CheckBookings(self):
+        if not self.bookings:
+            print("No Bookings Available")
+        else:
+            return True
+    def ViewCustomers(self):
+        if self.CheckCustomers():
+            if self.CheckBookings():
+                customer_info = {}
+                for booking_obj in self.bookings:
+                    for customer_obj in self.customers:
+                        if booking_obj.customer_id == customer_obj.customer_id:
+                            customer_info[customer_obj] = booking_obj
+                            break
+                        else:
+                            customer_info.setdefault(customer_obj,"No Bookings")
+                for customer_obj,booking_obj in customer_info.items():
+                    print(customer_obj)
+                    print(booking_obj)
+                    print("-"*60)
+            else:
+                print("Customers Do Not Booked Any Room")
+                for obj in self.customers:
+                    print(obj)
+    def InputChoice(self):
+        while True:
+            try:
+                choice = int(input("Enter Your Choice : "))
+                break
+            except ValueError:
+                print("Only Numbers Allowed")
+        return choice
+    def SearchCustomers(self):
+        if self.CheckCustomers():
+            print('''
+            Search Customer By-
+            1.Name            
+            2.Room No
+            3.Room Type
+            ''')
+            coice = self.InputChoice()
+            if choice == 1:
+                name = self.InputName()
+                customer_obj = [obj for obj in self.customers if obj.name == name]
+                if not customer_obj:
+                    print("Customer Not Found")
+                else:
+                    for obj in customer_obj:
+                        print(obj)
+            elif choice == 2:
+                if self.CheckRooms() and self.CheckBookings():
+                    room_no = self.inputRoomNo()
+                    room_obj = [obj for obj in self.rooms if obj.room_no == room_no]
+                    if not room_obj:    
+                        print("Room Not Found")
+                    else:                        
+                        room_obj = room_obj[0]
+                        room_id = room_obj.room_id
+                        booking_obj = [obj for obj in self.bookings if obj.room_id == room_id]
+                        if not booking_obj:
+                            print("No Customer Booked This Room")
+                        else:
+                            for obj in booking_obj:
+                                customer_id = obj.customer_id
+                                customer_obj = [obj for obj in self.customers if obj.customer_id == customer_id]
+                                customer_obj = customer_obj[0]
+                                print(customer_obj)
+                                print(obj.booking_status)
+            elif choice == 3:
+                if self.CheckBookings() and self.CheckRooms():
+                    room_type = self.InputRoomType()
+                    room_id = [obj.room_id for obj in self.rooms if obj.room_type == room_type]
+                    for id in room_id:
+                        booking_obj = [obj for obj in self.bookings if obj.room_id == id]
+                        if not booking_obj:
+                            print("No Customer Booked This Type Of Room")
+                        else:
+                            booking_obj = booking_obj[0]
+                            customer_id = booking_obj.Customer_id
+                            customer_obj = [obj for obj in self.customers if obj.customer_id == customer_id]
+                            customer_obj = customer_obj[0]
+                            print(customer_obj)
+                            print(booking_obj.booking_status)
     def GenerateBookingID(self):
         if not self.bookings:
             return "B10001"
@@ -453,19 +541,13 @@ def menu():
     6.Check IN or OUT
     7.Customer Info
     8.Cancel Booking
-    9.Exit
+    9.View Customer
+    10.Search Customer
+    11.Exit
     ''')
-def InputChoice():
-    while True:
-        try:
-            choice = int(input("Enter Your Choice : "))
-            break
-        except ValueError:
-            print("Only Numbers Allowed")
-    return choice
 while True:
     menu()
-    choice = InputChoice()
+    choice = hotel_management.InputChoice()
     if choice == 1:
         hotel_management.AddRoom()
     elif choice == 2:
@@ -483,6 +565,10 @@ while True:
     elif choice == 8:
         hotel_management.CancelBooking()
     elif choice == 9:
+        hotel_management.ViewCustomers()
+    elif choice == 10:
+        hotel_management.SearchCustomers()
+    elif choice == 11:
         print("Exited")
         break
     else:
